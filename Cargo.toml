@@ -1,0 +1,80 @@
+[package]
+name = "emmy_lsp_types"
+version = "0.1.999"
+edition = "2024"
+authors = ["CppCXY"]
+description = "LSP types for Rust, with enhanced features and strict linting"
+license = "MIT"
+repository = "https://github.com/EmmyLuaLs/emmy_lsp_types"
+readme = "README.md"
+keywords = ["lsp", "emmy"]
+categories = ["development-tools"]
+
+[lints.clippy]
+# Enable strict linting (with lower priority to allow individual overrides)
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+nursery = { level = "warn", priority = -1 }
+
+# Allow specific pedantic lints that are too noisy for LSP types
+module_name_repetitions = "allow"
+missing_errors_doc = "allow"
+missing_panics_doc = "allow"
+must_use_candidate = "allow"
+struct_excessive_bools = "allow"
+too_many_lines = "allow"
+
+# Allow large enum variants - common in LSP protocol types
+large_enum_variant = "allow"
+
+# Allow Self type suggestions - explicit types are clearer in protocol definitions
+use_self = "allow"
+
+# Allow const fn suggestions - not critical for this library
+missing_const_for_fn = "allow"
+
+# Allow derive_partial_eq_without_eq - LSP types may contain floats
+derive_partial_eq_without_eq = "allow"
+
+# Allow documentation style preferences
+too_long_first_doc_paragraph = "allow"
+doc_markdown = "allow"
+doc_link_with_quotes = "allow"
+
+# Allow match_same_arms - explicit matching can be clearer
+match_same_arms = "allow"
+
+# Allow redundant_pub_crate in test modules
+redundant_pub_crate = "allow"
+
+# Allow wildcard imports for internal modules
+wildcard_imports = "allow"
+
+# Allow string formatting style preferences
+uninlined_format_args = "allow"
+needless_raw_string_hashes = "allow"
+
+# Allow test-related patterns
+should_panic_without_expect = "allow"
+semicolon_if_nothing_returned = "allow"
+field_reassign_with_default = "allow"
+
+# Allow explicit patterns that may be clearer
+ignored_unit_patterns = "allow"
+explicit_iter_loop = "allow"
+
+# Allow complexity in test macros
+cognitive_complexity = "allow"
+
+# Performance optimizations that may reduce readability
+implicit_clone = "allow"
+ref_option = "allow"
+redundant_clone = "allow"
+
+[dependencies]
+bitflags = "2.9.4"
+serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0.145"
+serde_repr = "0.1.20"
+url = { version = "2.5", features = ["serde"] }
+percent-encoding = "2.3"
