@@ -1,0 +1,20 @@
+[package]
+name = "luars_interpreter"
+version = "0.1.0"
+edition = "2024"
+
+[features]
+default = []
+serde = ["luars/serde"]
+
+[dependencies]
+luars.workspace = true
+luars_debugger.workspace = true
+
+[[bin]]
+name = "lua"
+path = "src/bin/main.rs"
+
+[[bin]]
+name = "bytecode_dump"
+path = "src/bin/bytecode_dump.rs"
