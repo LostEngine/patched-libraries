@@ -46,10 +46,6 @@ include_dir.workspace = true
 workspace = true
 optional = true
 
-[dependencies.mimalloc]
-workspace = true
-optional = true
-
 [dev-dependencies]
 googletest.workspace = true
 
@@ -60,4 +56,4 @@ required-features = ["cli"]
 
 [features]
 default = ["cli"]
-cli = ["dep:clap", "dep:mimalloc"]
+cli = ["dep:clap"]

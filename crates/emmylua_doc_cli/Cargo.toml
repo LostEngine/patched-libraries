@@ -36,14 +36,10 @@ fern.workspace = true
 workspace = true
 optional = true
 
-[dependencies.mimalloc]
-workspace = true
-optional = true
-
 [[bin]]
 name = "emmylua_doc_cli"
 required-features = ["cli"]
 
 [features]
 default = ["cli"]
-cli = ["dep:clap", "dep:mimalloc"]
+cli = ["dep:clap"]

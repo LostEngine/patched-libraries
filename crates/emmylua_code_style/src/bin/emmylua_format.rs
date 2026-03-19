@@ -8,9 +8,6 @@ use std::{
 use clap::Parser;
 use emmylua_code_style::{LuaCodeStyle, cmd_args, reformat_lua_code};
 
-#[global_allocator]
-static GLOBAL: mimalloc::MiMalloc = mimalloc::MiMalloc;
-
 fn read_stdin_to_string() -> io::Result<String> {
     let mut s = String::new();
     io::stdin().read_to_string(&mut s)?;
