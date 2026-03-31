@@ -1,0 +1,28 @@
+[package]
+name = "glsl-lang-fuzz"
+version = "0.2.1"
+edition = "2021"
+default-run = "pp-test"
+rust-version = "1.82.0"
+
+[[bin]]
+name = "pp-fuzz"
+path = "src/bin/pp_fuzz.rs"
+
+[[bin]]
+name = "pp-test"
+path = "src/bin/pp_test.rs"
+
+[[bin]]
+name = "lang-fuzz"
+path = "src/bin/lang_fuzz.rs"
+
+[[bin]]
+name = "lang-test"
+path = "src/bin/lang_test.rs"
+
+[dependencies]
+glsl-lang-pp = "*"
+glsl-lang = "*"
+afl = "0.15"
+argh = "0.1.5"

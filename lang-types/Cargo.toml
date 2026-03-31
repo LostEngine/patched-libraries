@@ -1,0 +1,26 @@
+[package]
+name = "glsl-lang-types"
+version = "0.8.1"
+authors = ["Alixinne <alixinne@pm.me>"]
+edition = "2021"
+license = "BSD-3-Clause"
+description = "GLSL language AST"
+homepage = "https://github.com/alixinne/glsl-lang"
+documentation = "https://docs.rs/glsl-lang-lexer/"
+repository = "https://github.com/alixinne/glsl-lang"
+readme = "README.md"
+keywords = ["glsl", "language", "parser"]
+categories = ["rendering"]
+rust-version = "1.82.0"
+
+[dependencies]
+lang-util = "=0.8.1"
+thiserror = "2.0"
+
+rserde = { version = "1.0", optional = true, features = ["derive"], package = "serde" }
+
+[features]
+default = []
+
+# AST Serialization
+serde = ["rserde", "lang-util/serde"]

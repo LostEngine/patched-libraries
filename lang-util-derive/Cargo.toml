@@ -1,0 +1,24 @@
+[package]
+name = "lang-util-derive"
+version = "0.8.1"
+authors = ["Alixinne <alixinne@pm.me>"]
+edition = "2021"
+license = "BSD-3-Clause"
+description = "proc-macros for lang-util"
+homepage = "https://github.com/alixinne/glsl-lang"
+documentation = "https://docs.rs/lang-util-derive/"
+repository = "https://github.com/alixinne/glsl-lang"
+readme = "README.md"
+keywords = ["language", "parser", "ast", "macro"]
+categories = ["parsing"]
+rust-version = "1.82.0"
+
+[lib]
+path = "src/lib.rs"
+proc-macro = true
+
+[dependencies]
+darling = "0.20"
+proc-macro2 = "1.0"
+quote = "1.0"
+syn = "2.0"

@@ -1,0 +1,18 @@
+[package]
+name = "lang-util-dev"
+version = "0.8.1"
+authors = ["Alixinne <alixinne@pm.me>"]
+edition = "2021"
+license = "BSD-3-Clause"
+description = "Development utilities for parsers implemented using lang-util"
+homepage = "https://github.com/alixinne/glsl-lang"
+documentation = "https://docs.rs/lang-util-test/"
+repository = "https://github.com/alixinne/glsl-lang"
+readme = "README.md"
+keywords = ["language", "parser", "ast"]
+categories = ["parsing"]
+rust-version = "1.82.0"
+
+[dependencies]
+derive_more = { version = "2.0", features = ["display"] }
+similar-asserts = "1.7"

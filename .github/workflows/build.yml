@@ -1,0 +1,188 @@
+name: Build, test and release crate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+      - dev
+      - next
+
+jobs:
+  check:
+    name: Check crate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}
+          path: |
+            ~/.cargo/bin/cargo-readme
+
+      - name: Install cargo-readme
+        run: |
+          cargo-readme -V || (
+            cargo install --force cargo-readme && cargo-readme -V
+          )
+
+      - name: Install cargo-workspaces
+        run: |
+          cargo-workspaces -V || (
+            cargo install --force cargo-workspaces && cargo-workspaces -V
+          )
+
+      - name: Check READMEs
+        run: ./ci/readme.sh -c
+
+      - name: Check formatting
+        run: cargo fmt -- --check
+
+      - name: Check clippy lints
+        run: cargo clippy -- -D warnings -A clippy::result_large_err
+
+      - uses: cocogitto/cocogitto-action@v3.8
+        with:
+          check-latest-tag-only: true
+          git-user: glsl-lang
+          git-user-email: glsl-lang@alixinne.github.io
+
+  test:
+    name: Test crate
+
+    defaults:
+      run:
+        shell: bash
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-pc-windows-msvc
+        include:
+          - target: x86_64-unknown-linux-gnu
+            os: ubuntu-latest
+            ignore_tests: ""
+          - target: x86_64-pc-windows-msvc
+            os: windows-latest
+            ignore_tests: "include_vert"
+
+    runs-on: ${{ matrix.os }}
+
+    env:
+      CARGO_BUILD_TARGET: ${{ matrix.target }}
+
+    steps:
+      - name: Force git to use LF
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - uses: actions/checkout@v4
+
+      - name: Remove fuzz target from members on Windows
+        run: |
+          if [[ "${{ matrix.target }}" == *-windows-* ]]; then
+            sed -i '/fuzz/d' Cargo.toml
+          fi
+
+      - name: Run doc tests
+        run: cargo test --workspace -q --doc
+
+      - name: Run lib tests
+        run: cargo test --workspace -q --lib
+
+      - name: Run lib tests with serde
+        run: cargo test --workspace -q --lib --features serde
+
+      - name: Run lib tests with all possible features
+        run: |
+          set -e
+          cargo test -p glsl-lang -q --lib
+          cargo test -p glsl-lang -q --lib --features lexer-full
+
+      - name: Generate test driver
+        run: cargo xtask gen-tests
+        env:
+          IGNORE_TESTS: ${{ matrix.ignore_tests }}
+
+      - name: Run glsl-lang-pp/additional tests
+        run: cargo test -p glsl-lang-pp --test additional --features full
+
+      - name: Run glsl-lang-pp/glslang tests
+        run: cargo test -p glsl-lang-pp --test glslang --features full
+
+      - name: Run glsl-lang/glslang tests
+        # Since the parser isn't ready yet, and some tests are invalid input anyways
+        continue-on-error: true
+        run: |
+          set +e
+          cargo test -p glsl-lang -q --test glslang --no-default-features
+          cargo test -p glsl-lang -q --test glslang --no-default-features --features lexer-full
+
+      - name: Run glsl-lang-quote tests
+        run: |
+          cargo test -p glsl-lang-quote
+
+  release:
+    name: Release crate
+    needs: [check, test]
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GH_PAT }}
+
+      - uses: actions/cache@v4
+        with:
+          key: ${{ runner.os }}-cargo-release-tools-v1
+          path: |
+            ~/.cargo/bin/cargo-set-version
+            ~/.cargo/bin/cargo-upgrade
+            ~/.cargo/bin/cargo-workspaces
+
+      - name: Install cargo utilities
+        run: |
+          # Install cargo-edit
+          [[ "$(cargo-upgrade -V)" == *0.8.0 && "$(cargo-set-version -V)" == *0.8.0 ]] || (
+            cargo install cargo-edit --force --version 0.8.0 \
+              && cargo-upgrade -V \
+              && cargo-set-version -V
+          )
+
+          # Install cargo-workspaces
+          [[ "$(cargo-workspaces -V)" == *0.2.34 ]] || (
+            cargo install cargo-workspaces --force --version 0.2.34 \
+              && cargo-workspaces -V
+          )
+
+      - uses: cocogitto/cocogitto-action@v3.8
+        id: release
+        # Set to true because the action fails if there's nothing to release
+        continue-on-error: true
+        # Propagate secrets
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}
+        with:
+          check: false
+          release: true
+          git-user: glsl-lang
+          git-user-email: glsl-lang@alixinne.github.io
+
+      - run: cog changelog --at ${{ steps.release.outputs.version }} -t full_hash > GITHUB_CHANGELOG.md
+        if: steps.release.outputs.version != ''
+
+      - uses: softprops/action-gh-release@v2
+        if: steps.release.outputs.version != ''
+        with:
+          token: ${{ secrets.GH_PAT }}
+          body_path: GITHUB_CHANGELOG.md
+          tag_name: ${{ steps.release.outputs.version }}
+
+# vim: ft=yaml:ts=2:sw=2:et
